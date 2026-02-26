@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Список хакатонов{% endblock %}
+
+{% block content %}
+<h1 style="margin-top: 1rem;">Список хакатонов</h1>
+<div class="grid">
+    {% for hackathon in hackathons %}
+        <article class="card">
+            <h2>{{ hackathon.title }}</h2>
+            <p class="meta">
+                {{ hackathon.start_date|date:'d.m.Y' }} — {{ hackathon.end_date|date:'d.m.Y' }}
+                {% if hackathon.location %} · {{ hackathon.location }}{% endif %}
+            </p>
+            <p>{{ hackathon.description|truncatechars:140 }}</p>
+            <p>
+                {% if hackathon.is_open %}
+                    <span class="badge">Регистрация открыта</span>
+                {% else %}
+                    <span class="badge">Регистрация закрыта</span>
+                {% endif %}
+            </p>
+            <a class="btn" href="{% url 'hackathons:hackathon-detail' hackathon.id %}">Подробнее</a>
+        </article>
+    {% empty %}
+        <article class="card">
+            <h2>Пока нет хакатонов</h2>
+            <p class="meta">Добавьте первый хакатон через админку: <code>/admin/</code>.</p>
+        </article>
+    {% endfor %}
+</div>
+{% endblock %}

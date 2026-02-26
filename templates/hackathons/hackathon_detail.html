@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ hackathon.title }}{% endblock %}
+
+{% block content %}
+<article class="card" style="margin-top: 1rem;">
+    <p><a href="{% url 'hackathons:hackathon-list' %}">← К списку</a></p>
+    <h1>{{ hackathon.title }}</h1>
+    <p class="meta">
+        {{ hackathon.start_date|date:'d.m.Y' }} — {{ hackathon.end_date|date:'d.m.Y' }}
+        {% if hackathon.location %} · {{ hackathon.location }}{% endif %}
+    </p>
+    <p>{{ hackathon.description }}</p>
+    <p>
+        {% if hackathon.is_open %}
+            <span class="badge">Набор участников открыт</span>
+        {% else %}
+            <span class="badge">Набор участников завершён</span>
+        {% endif %}
+    </p>
+</article>
+{% endblock %}
