@@ -1,10 +1,17 @@
 from django.contrib.auth import login
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import redirect
-from django.views.generic import DetailView, ListView, TemplateView
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
-from .forms import SignUpForm
+from .forms import HackathonForm, SignUpForm
 from .models import Hackathon, UserProfile
+
+
+class OrganizerRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    def test_func(self):
+        profile = getattr(self.request.user, "profile", None)
+        return bool(profile and profile.role == UserProfile.Roles.ORGANIZER)
 
 
 class HomeView(TemplateView):
@@ -16,11 +23,41 @@ class HackathonListView(ListView):
     template_name = "hackathons/hackathon_list.html"
     context_object_name = "hackathons"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profile = getattr(self.request.user, "profile", None)
+        context["can_manage_hackathons"] = bool(
+            self.request.user.is_authenticated
+            and profile
+            and profile.role == UserProfile.Roles.ORGANIZER
+        )
+        return context
+
 
 class HackathonDetailView(DetailView):
     model = Hackathon
     template_name = "hackathons/hackathon_detail.html"
     context_object_name = "hackathon"
+
+
+class HackathonCreateView(OrganizerRequiredMixin, CreateView):
+    model = Hackathon
+    form_class = HackathonForm
+    template_name = "hackathons/hackathon_form.html"
+    success_url = reverse_lazy("hackathons:hackathon-list")
+
+
+class HackathonUpdateView(OrganizerRequiredMixin, UpdateView):
+    model = Hackathon
+    form_class = HackathonForm
+    template_name = "hackathons/hackathon_form.html"
+    success_url = reverse_lazy("hackathons:hackathon-list")
+
+
+class HackathonDeleteView(OrganizerRequiredMixin, DeleteView):
+    model = Hackathon
+    template_name = "hackathons/hackathon_confirm_delete.html"
+    success_url = reverse_lazy("hackathons:hackathon-list")
 
 
 class SignUpView(TemplateView):
@@ -47,4 +84,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         profile = getattr(self.request.user, "profile", None)
         context["profile"] = profile
         context["hackathons_count"] = Hackathon.objects.count()
+        context["can_manage_hackathons"] = bool(
+            profile and profile.role == UserProfile.Roles.ORGANIZER
+        )
         return context

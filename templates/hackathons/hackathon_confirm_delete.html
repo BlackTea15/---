@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Удаление хакатона{% endblock %}
+
+{% block content %}
+<section class="card" style="margin-top:1rem; max-width:680px;">
+    <h1>Удалить хакатон?</h1>
+    <p>Вы действительно хотите удалить <strong>{{ object.title }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn" type="submit">Да, удалить</button>
+        <a class="btn btn-light" href="{% url 'hackathons:hackathon-list' %}">Отмена</a>
+    </form>
+</section>
+{% endblock %}

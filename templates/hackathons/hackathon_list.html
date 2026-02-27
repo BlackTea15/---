@@ -4,6 +4,9 @@
 
 {% block content %}
 <h1 style="margin-top: 1rem;">Список хакатонов</h1>
+{% if can_manage_hackathons %}
+    <p><a class="btn" href="{% url 'hackathons:hackathon-create' %}">+ Создать хакатон</a></p>
+{% endif %}
 <div class="grid">
     {% for hackathon in hackathons %}
         <article class="card">
@@ -20,12 +23,24 @@
                     <span class="badge">Регистрация закрыта</span>
                 {% endif %}
             </p>
-            <a class="btn" href="{% url 'hackathons:hackathon-detail' hackathon.id %}">Подробнее</a>
+            <p>
+                <a class="btn" href="{% url 'hackathons:hackathon-detail' hackathon.id %}">Подробнее</a>
+                {% if can_manage_hackathons %}
+                    <a class="btn btn-light" href="{% url 'hackathons:hackathon-edit' hackathon.id %}">Редактировать</a>
+                    <a class="btn btn-light" href="{% url 'hackathons:hackathon-delete' hackathon.id %}">Удалить</a>
+                {% endif %}
+            </p>
         </article>
     {% empty %}
         <article class="card">
             <h2>Пока нет хакатонов</h2>
-            <p class="meta">Добавьте первый хакатон через админку: <code>/admin/</code>.</p>
+            <p class="meta">
+                {% if can_manage_hackathons %}
+                    Создайте первый хакатон по кнопке выше.
+                {% else %}
+                    Хакатоны пока не добавлены.
+                {% endif %}
+            </p>
         </article>
     {% endfor %}
 </div>
