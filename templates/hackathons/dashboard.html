@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Личный кабинет{% endblock %}
+{% block content %}
+<section class="card" style="margin-top:1rem;">
+    <h1>Личный кабинет</h1>
+    <p><strong>Пользователь:</strong> {{ user.username }}</p>
+    <p><strong>Роль:</strong> {% if profile %}{{ profile.get_role_display }}{% else %}Не указана{% endif %}</p>
+    <p><strong>Доступно хакатонов:</strong> {{ hackathons_count }}</p>
+</section>
+{% endblock %}
