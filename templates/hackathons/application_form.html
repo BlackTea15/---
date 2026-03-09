@@ -1,0 +1,15 @@
+{% extends 'hackathons/base.html' %}
+
+{% block title %}Заявка на участие{% endblock %}
+
+{% block content %}
+<section class="card" style="margin-top:1rem; max-width:680px;">
+    <h1>Заявка на {{ hackathon.title }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn" type="submit">Отправить заявку</button>
+        <a class="btn btn-light" href="{% url 'hackathons:hackathon-detail' hackathon.id %}">Отмена</a>
+    </form>
+</section>
+{% endblock %}

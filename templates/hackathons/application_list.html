@@ -1,0 +1,30 @@
+{% extends 'hackathons/base.html' %}
+
+{% block title %}Заявки участников{% endblock %}
+
+{% block content %}
+<h1 style="margin-top:1rem;">Заявки участников</h1>
+<div class="grid">
+    {% for app in applications %}
+        <article class="card">
+            <h3>{{ app.user.username }} → {{ app.hackathon.title }}</h3>
+            <p class="meta">Статус: {{ app.get_status_display }}</p>
+            {% if app.motivation %}
+                <p>{{ app.motivation }}</p>
+            {% endif %}
+            <form method="post" action="{% url 'hackathons:application-status' app.id 'approved' %}" style="display:inline;">
+                {% csrf_token %}
+                <button class="btn" type="submit">Одобрить</button>
+            </form>
+            <form method="post" action="{% url 'hackathons:application-status' app.id 'rejected' %}" style="display:inline;">
+                {% csrf_token %}
+                <button class="btn btn-light" type="submit">Отклонить</button>
+            </form>
+        </article>
+    {% empty %}
+        <article class="card">
+            <h3>Пока нет заявок</h3>
+        </article>
+    {% endfor %}
+</div>
+{% endblock %}

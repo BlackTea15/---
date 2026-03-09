@@ -1,0 +1,15 @@
+{% extends 'hackathons/base.html' %}
+
+{% block title %}{% if object %}Редактирование{% else %}Создание{% endif %} хакатона{% endblock %}
+
+{% block content %}
+<section class="card" style="margin-top:1rem; max-width:680px;">
+    <h1>{% if object %}Редактирование{% else %}Создание{% endif %} хакатона</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn" type="submit">Сохранить</button>
+        <a class="btn btn-light" href="{% url 'hackathons:hackathon-list' %}">Отмена</a>
+    </form>
+</section>
+{% endblock %}

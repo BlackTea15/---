@@ -1,0 +1,34 @@
+{% extends 'hackathons/base.html' %}
+
+{% block title %}Команды{% endblock %}
+
+{% block content %}
+<h1 style="margin-top:1rem;">Команды</h1>
+<p>
+    <a class="btn" href="{% url 'hackathons:team-create' %}">+ Создать команду</a>
+</p>
+<section class="card" style="margin-bottom:1rem; max-width:500px;">
+    <h2>Вступить в команду</h2>
+    <form method="post" action="{% url 'hackathons:team-join' %}">
+        {% csrf_token %}
+        {{ join_form.as_p }}
+        <button class="btn" type="submit">Вступить</button>
+    </form>
+</section>
+<div class="grid">
+    {% for team in teams %}
+        <article class="card">
+            <h3>{{ team.name }}</h3>
+            <p class="meta">Хакатон: {{ team.hackathon.title }}</p>
+            <p class="meta">Капитан: {{ team.captain.username }}</p>
+            <p><span class="badge">Код: {{ team.invite_code }}</span></p>
+            <p>Участников: {{ team.members.count }}</p>
+        </article>
+    {% empty %}
+        <article class="card">
+            <h3>Пока нет команд</h3>
+            <p class="meta">Создайте первую команду и поделитесь кодом приглашения.</p>
+        </article>
+    {% endfor %}
+</div>
+{% endblock %}

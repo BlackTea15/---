@@ -1,0 +1,20 @@
+{% extends 'hackathons/base.html' %}
+{% block title %}HackHub — организация хакатонов{% endblock %}
+{% block content %}
+<section class="card" style="margin-top:1rem;">
+    <h1>Простое веб-приложение для организации хакатонов</h1>
+    <p class="meta">Публикуйте события, управляйте ролями пользователей и собирайте участников в одном месте.</p>
+    <p>
+        <a class="btn" href="{% url 'hackathons:hackathon-list' %}">Смотреть хакатоны</a>
+        {% if not user.is_authenticated %}
+            <a class="btn btn-light" href="{% url 'hackathons:signup' %}">Создать аккаунт</a>
+        {% endif %}
+    </p>
+    {% if can_manage_hackathons %}
+    <p class="meta">
+        Вы можете создать хакатон через кнопку «Создать хакатон» на странице списка хакатонов
+        или в личном кабинете.
+    </p>
+    {% endif %}
+</section>
+{% endblock %}
