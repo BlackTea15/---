@@ -1,13 +1,17 @@
-{% extends 'base.html' %}
+{% extends 'hackathons/base.html' %}
 
 {% block title %}{{ hackathon.title }}{% endblock %}
 
 {% block content %}
-<article class="card" style="margin-top:1rem;">
+<article class="card page">
     <h1>{{ hackathon.title }}</h1>
     <p class="meta">
         {{ hackathon.start_date|date:'d.m.Y' }} — {{ hackathon.end_date|date:'d.m.Y' }}
         {% if hackathon.location %} · {{ hackathon.location }}{% endif %}
+    </p>
+    <p class="meta">
+        {% if hackathon.application_deadline %}Дедлайн заявок: {{ hackathon.application_deadline|date:'d.m.Y' }} · {% endif %}
+        Одобрено: {{ approved_count }} / {{ hackathon.max_participants }}
     </p>
     <p>{{ hackathon.description }}</p>
     <p>
@@ -16,8 +20,50 @@
         {% else %}
             <span class="badge">Регистрация закрыта</span>
         {% endif %}
+        {% if deadline_passed %}
+            <span class="badge">Дедлайн прошёл</span>
+        {% endif %}
+        {% if limit_reached %}
+            <span class="badge">Лимит достигнут</span>
+        {% endif %}
     </p>
-    <p>
+
+    {% if user.is_authenticated and hackathon.is_open and not deadline_passed and not limit_reached %}
+        {% if already_applied %}
+            <p class="meta">Ваша заявка: <strong>{{ my_application.get_status_display }}</strong></p>
+        {% else %}
+            <p><a class="btn" href="{% url 'hackathons:application-create' hackathon.id %}">Подать заявку</a></p>
+        {% endif %}
+    {% elif not user.is_authenticated %}
+        <p class="meta">Чтобы подать заявку, войдите в аккаунт.</p>
+    {% endif %}
+
+    <hr style="margin:1.2rem 0; border:none; border-top:1px solid rgba(162,178,238,.35);">
+    <h2>Расписание</h2>
+    {% for item in schedule_items %}
+        <p>
+            <strong>{{ item.starts_at|date:'d.m.Y H:i' }}</strong>
+            {% if item.ends_at %} — {{ item.ends_at|date:'H:i' }}{% endif %}
+            · {{ item.title }}
+            {% if item.description %}<br><span class="meta">{{ item.description }}</span>{% endif %}
+        </p>
+    {% empty %}
+        <p class="meta">Расписание пока не опубликовано.</p>
+    {% endfor %}
+
+    <h2 style="margin-top:1rem;">Результаты</h2>
+    {% for result in result_entries %}
+        <p>
+            <strong>#{{ result.place }}</strong> — {{ result.project_name }}
+            {% if result.team %} (команда: {{ result.team.name }}){% endif %}
+            {% if result.repo_url %} · <a href="{{ result.repo_url }}" target="_blank" rel="noreferrer">репозиторий</a>{% endif %}
+            {% if result.description %}<br><span class="meta">{{ result.description }}</span>{% endif %}
+        </p>
+    {% empty %}
+        <p class="meta">Результаты пока не опубликованы.</p>
+    {% endfor %}
+
+    <p class="actions" style="margin-top:1rem;">
         <a class="btn btn-light" href="{% url 'hackathons:hackathon-list' %}">← Назад к списку</a>
     </p>
 </article>

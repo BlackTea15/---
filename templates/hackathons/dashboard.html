@@ -1,13 +1,26 @@
-{% extends 'base.html' %}
+{% extends 'hackathons/base.html' %}
 {% block title %}Личный кабинет{% endblock %}
 {% block content %}
-<section class="card" style="margin-top:1rem;">
+<section class="card page card-narrow">
     <h1>Личный кабинет</h1>
     <p><strong>Пользователь:</strong> {{ user.username }}</p>
     <p><strong>Роль:</strong> {% if profile %}{{ profile.get_role_display }}{% else %}Не указана{% endif %}</p>
     <p><strong>Доступно хакатонов:</strong> {{ hackathons_count }}</p>
+    <p><strong>Мои команды:</strong> {{ teams_count }}</p>
+    <p><strong>Мои заявки:</strong> {{ applications_count }}</p>
     {% if can_manage_hackathons %}
-        <p><a class="btn" href="{% url 'hackathons:hackathon-create' %}">Создать хакатон</a></p>
+        <p class="actions">
+            <a class="btn" href="{% url 'hackathons:hackathon-create' %}">Создать хакатон</a>
+            <a class="btn btn-light" href="{% url 'hackathons:application-list' %}">Заявки участников</a>
+        </p>
+    {% endif %}
+    <p class="actions"><a class="btn btn-light" href="{% url 'hackathons:team-list' %}">Открыть команды</a></p>
+    {% if is_admin_user %}
+    <section class="card page">
+        <h2>Админ-панель</h2>
+        <p class="meta">Если нужно редактировать пользователей, группы и хакатоны через Django admin:</p>
+        <p><a class="btn" href="/admin/">Открыть /admin/</a></p>
+    </section>
     {% endif %}
 </section>
 {% endblock %}
