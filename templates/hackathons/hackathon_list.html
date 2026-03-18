@@ -1,0 +1,56 @@
+{% extends 'hackathons/base.html' %}
+
+{% block title %}Список хакатонов{% endblock %}
+
+{% block content %}
+<h1 class="page page-title">Список хакатонов</h1>
+
+<section class="card" style="margin-bottom: 1rem;">
+    <form method="get" class="filter-form">
+        <div>
+            <label for="q">Поиск по названию</label>
+            <input id="q" name="q" type="text" value="{{ q }}" placeholder="Например, AI Hack" />
+        </div>
+        <label style="display:flex; align-items:center; gap:.4rem;">
+            <input type="checkbox" name="open_only" value="1" {% if open_only %}checked{% endif %} style="width:auto; margin:0;" />
+            Только открытые
+        </label>
+        <button class="btn" type="submit">Применить</button>
+    </form>
+</section>
+
+{% if can_manage_hackathons %}
+    <p class="actions"><a class="btn" href="{% url 'hackathons:hackathon-create' %}">+ Создать хакатон</a></p>
+{% endif %}
+<div class="grid">
+    {% for hackathon in hackathons %}
+        <article class="card">
+            <h2>{{ hackathon.title }}</h2>
+            <p class="meta">
+                {{ hackathon.start_date|date:'d.m.Y' }} — {{ hackathon.end_date|date:'d.m.Y' }}
+                {% if hackathon.location %} · {{ hackathon.location }}{% endif %}
+            </p>
+            <p>{{ hackathon.description|truncatechars:140 }}</p>
+            <p>
+                {% if hackathon.is_open %}
+                    <span class="badge">Регистрация открыта</span>
+                {% else %}
+                    <span class="badge">Регистрация закрыта</span>
+                {% endif %}
+            </p>
+            <p>
+                <a class="btn" href="{% url 'hackathons:hackathon-detail' hackathon.id %}">Подробнее</a>
+                {% if can_manage_hackathons %}
+                    <a class="btn btn-light" href="{% url 'hackathons:hackathon-edit' hackathon.id %}">Редактировать</a>
+                    <a class="btn btn-light" href="{% url 'hackathons:hackathon-delete' hackathon.id %}">Удалить</a>
+                {% endif %}
+            </p>
+        </article>
+    {% empty %}
+        <article class="card">
+            <h2>Ничего не найдено</h2>
+            <p class="meta">Попробуйте изменить фильтры или добавить новый хакатон.</p>
+        </article>
+    {% endfor %}
+</div>
+{% endblock %}
