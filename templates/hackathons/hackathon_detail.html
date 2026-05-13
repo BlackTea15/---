@@ -1,16 +1,9 @@
-
-{% extends 'hackathons/base.html' %}
-=======
-{% extends 'base.html' %}
-
+﻿{% extends 'hackathons/base.html' %}
 
 {% block title %}{{ hackathon.title }}{% endblock %}
 
 {% block content %}
-
-<article class="card page">
-
-<article class="card" style="margin-top: 1rem;">
+<article class="card page" style="margin-top: 1rem;">
     <p><a href="{% url 'hackathons:hackathon-list' %}">← К списку</a></p>
 
     <h1>{{ hackathon.title }}</h1>
@@ -23,7 +16,9 @@
         {% if hackathon.application_deadline %}Дедлайн заявок: {{ hackathon.application_deadline|date:'d.m.Y' }} · {% endif %}
         Одобрено: {{ approved_count }} / {{ hackathon.max_participants }}
     </p>
+
     <p>{{ hackathon.description }}</p>
+
     <p>
         {% if hackathon.is_open %}
             <span class="badge">Регистрация открыта</span>
@@ -31,7 +26,7 @@
             <span class="badge">Регистрация закрыта</span>
         {% endif %}
         {% if deadline_passed %}
-            <span class="badge">Дедлайн прошёл</span>
+            <span class="badge">Дедлайн прошел</span>
         {% endif %}
         {% if limit_reached %}
             <span class="badge">Лимит достигнут</span>
@@ -50,6 +45,7 @@
 
     <hr style="margin:1.2rem 0; border:none; border-top:1px solid rgba(162,178,238,.35);">
     <h2>Подача проектов</h2>
+
     {% if user.is_authenticated %}
         {% if my_submission %}
             <p class="meta">Вы уже подали проект: <strong>{{ my_submission.title }}</strong>.</p>
@@ -114,15 +110,6 @@
 
     <p class="actions" style="margin-top:1rem;">
         <a class="btn btn-light" href="{% url 'hackathons:hackathon-list' %}">← Назад к списку</a>
-
-    <p>{{ hackathon.description }}</p>
-    <p>
-        {% if hackathon.is_open %}
-            <span class="badge">Набор участников открыт</span>
-        {% else %}
-            <span class="badge">Набор участников завершён</span>
-        {% endif %}
-
     </p>
 </article>
 {% endblock %}

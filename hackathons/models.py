@@ -17,9 +17,6 @@ class UserProfile(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user.username} ({self.get_role_display()})"
-=======
-from django.db import models
-main
 
 
 class Hackathon(models.Model):
@@ -29,11 +26,8 @@ class Hackathon(models.Model):
     description = models.TextField()
     start_date = models.DateField()
     end_date = models.DateField()
-codex/create-web-app-for-hackathon-automation-8v2i6vv
     application_deadline = models.DateField(null=True, blank=True)
     max_participants = models.PositiveIntegerField(default=100)
-=======
-main
     location = models.CharField(max_length=120, blank=True)
     is_open = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

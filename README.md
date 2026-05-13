@@ -17,7 +17,6 @@ python3 manage.py runserver
 
 ##После запуска:
 - сайт: http://127.0.0.1:8000/
- codex/create-web-app-for-hackathon-automation-8v2i6vv
 - вход: http://127.0.0.1:8000/login/
 - регистрация: http://127.0.0.1:8000/signup/
 - админка: http://127.0.0.1:8000/admin/
@@ -53,7 +52,6 @@ python3 manage.py test
 - email-уведомления;
 - экспорт списков участников/команд (CSV);
 - публичная страница проектов команд.
-=======
 - админка: http://127.0.0.1:8000/admin/
 
 ## Что добавить дальше

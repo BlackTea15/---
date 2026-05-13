@@ -1,13 +1,8 @@
-
-{% extends 'hackathons/base.html' %}
-
-{% extends 'base.html' %}
-
+﻿{% extends 'hackathons/base.html' %}
 
 {% block title %}Список хакатонов{% endblock %}
 
 {% block content %}
-
 <h1 class="page page-title">Список хакатонов</h1>
 
 <section class="card" style="margin-bottom: 1rem;">
@@ -28,9 +23,7 @@
     <p class="actions"><a class="btn" href="{% url 'hackathons:hackathon-create' %}">+ Создать хакатон</a></p>
 {% endif %}
 
-<h1 style="margin-top: 1rem;">Список хакатонов</h1>
-
-<div class="grid">
+<div class="grid" style="margin-top: 1rem;">
     {% for hackathon in hackathons %}
         <article class="card">
             <h2>{{ hackathon.title }}</h2>
@@ -47,7 +40,7 @@
                 {% endif %}
             </p>
 
-            <p>
+            <p class="actions">
                 <a class="btn" href="{% url 'hackathons:hackathon-detail' hackathon.id %}">Подробнее</a>
                 {% if can_manage_hackathons %}
                     <a class="btn btn-light" href="{% url 'hackathons:hackathon-edit' hackathon.id %}">Редактировать</a>
@@ -57,16 +50,8 @@
         </article>
     {% empty %}
         <article class="card">
-            <h2>Ничего не найдено</h2>
-            <p class="meta">Попробуйте изменить фильтры или добавить новый хакатон.</p>
-
-            <a class="btn" href="{% url 'hackathons:hackathon-detail' hackathon.id %}">Подробнее</a>
-        </article>
-    {% empty %}
-        <article class="card">
             <h2>Пока нет хакатонов</h2>
-            <p class="meta">Добавьте первый хакатон через админку: <code>/admin/</code>.</p>
-
+            <p class="meta">Попробуйте изменить фильтры или добавьте первый хакатон.</p>
         </article>
     {% endfor %}
 </div>

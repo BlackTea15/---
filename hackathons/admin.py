@@ -45,11 +45,6 @@ class CustomUserAdmin(StaffManagePermissionMixin, UserAdmin):
 class CustomGroupAdmin(StaffManagePermissionMixin, GroupAdmin):
     pass
 
-
-from .models import Hackathon
-
-
-
 @admin.register(Hackathon)
 class HackathonAdmin(admin.ModelAdmin):
 
@@ -106,8 +101,4 @@ class JuryScoreAdmin(admin.ModelAdmin):
     list_display = ("submission", "jury", "score", "created_at")
     list_filter = ("score", "submission__hackathon")
     search_fields = ("submission__title", "jury__username")
-
-    list_display = ("title", "start_date", "end_date", "is_open")
-    list_filter = ("is_open", "start_date")
-    search_fields = ("title", "description", "location")
 
