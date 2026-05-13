@@ -1,4 +1,4 @@
-codex/create-web-app-for-hackathon-automation-8v2i6vv
+
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
