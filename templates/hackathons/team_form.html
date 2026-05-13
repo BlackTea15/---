@@ -1,0 +1,17 @@
+{% extends 'hackathons/base.html' %}
+
+{% block title %}Создание команды{% endblock %}
+
+{% block content %}
+<section class="card page card-narrow">
+    <h1>Создание команды</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="actions">
+            <button class="btn" type="submit">Создать</button>
+            <a class="btn btn-light" href="{% url 'hackathons:team-list' %}">Отмена</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

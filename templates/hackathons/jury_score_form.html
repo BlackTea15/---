@@ -1,0 +1,18 @@
+{% extends 'hackathons/base.html' %}
+
+{% block title %}Оценка проекта{% endblock %}
+
+{% block content %}
+<section class="card page card-narrow">
+    <h1>Оценить проект: {{ submission.title }}</h1>
+    <p class="meta">Хакатон: {{ submission.hackathon.title }} · Автор: {{ submission.user.username }}</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="actions">
+            <button class="btn" type="submit">Сохранить оценку</button>
+            <a class="btn btn-light" href="{% url 'hackathons:hackathon-detail' submission.hackathon.id %}">Назад</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

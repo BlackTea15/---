@@ -1,0 +1,12 @@
+{% extends 'hackathons/base.html' %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<section class="card page card-auth">
+    <h1>Вход</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button class="btn" type="submit">Войти</button>
+    </form>
+</section>
+{% endblock %}
