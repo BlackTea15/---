@@ -17,7 +17,7 @@ class UserProfile(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user.username} ({self.get_role_display()})"
-=======
+
 from django.db import models
 main
 
