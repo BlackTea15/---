@@ -32,7 +32,6 @@ app_name = "hackathons"
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("hackathons/", HackathonListView.as_view(), name="hackathon-list"),
-codex/create-web-app-for-hackathon-automation-8v2i6vv
     path("hackathons/create/", HackathonCreateView.as_view(), name="hackathon-create"),
     path("hackathons/<int:pk>/", HackathonDetailView.as_view(), name="hackathon-detail"),
     path("hackathons/<int:pk>/edit/", HackathonUpdateView.as_view(), name="hackathon-edit"),
