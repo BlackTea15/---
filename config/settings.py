@@ -123,7 +123,6 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-codex/create-web-app-for-hackathon-automation-8v2i6vv
 
 
 LOGIN_REDIRECT_URL = "/dashboard/"
