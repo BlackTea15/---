@@ -1,3 +1,4 @@
+
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -49,9 +50,15 @@ class OrganizerRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
         return user_can_manage_hackathons(self.request.user)
 
+from django.views.generic import DetailView, ListView, TemplateView
+
+from .models import Hackathon
+
+
 
 class HomeView(TemplateView):
     template_name = "hackathons/home.html"
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -65,6 +72,7 @@ class HackathonListView(ListView):
     model = Hackathon
     template_name = "hackathons/hackathon_list.html"
     context_object_name = "hackathons"
+
 
     def get_queryset(self):
         queryset = Hackathon.objects.all()
@@ -85,10 +93,12 @@ class HackathonListView(ListView):
         return context
 
 
+
 class HackathonDetailView(DetailView):
     model = Hackathon
     template_name = "hackathons/hackathon_detail.html"
     context_object_name = "hackathon"
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -382,3 +392,4 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["can_manage_hackathons"] = user_can_manage_hackathons(self.request.user)
         context["is_admin_user"] = bool(self.request.user.is_staff or self.request.user.is_superuser)
         return context
+

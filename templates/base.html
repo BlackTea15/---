@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HackHub{% endblock %}</title>
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --card: #ffffff;
+            --accent: #3f51b5;
+            --accent-soft: #e6e9ff;
+            --text: #222;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .nav {
+            background: var(--card);
+            border-bottom: 1px solid #d8ddf2;
+        }
+        .nav-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        .nav a {
+            color: #2f3b7a;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .brand {
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+        .card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 1.2rem;
+            border: 1px solid #d8ddf2;
+            box-shadow: 0 3px 8px rgba(30, 33, 53, 0.06);
+        }
+        .grid {
+            display: grid;
+            gap: 1rem;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 0.85rem;
+            border-radius: 10px;
+            background: var(--accent);
+            color: #fff;
+            text-decoration: none;
+        }
+        .badge {
+            display: inline-block;
+            background: var(--accent-soft);
+            color: #2d3d99;
+            border-radius: 999px;
+            padding: 0.2rem 0.7rem;
+            font-size: 0.85rem;
+            margin-right: 0.4rem;
+        }
+        .meta {
+            color: #5a5f80;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="nav">
+        <div class="container nav-inner">
+            <a href="{% url 'hackathons:home' %}" class="brand">HackHub</a>
+            <nav>
+                <a href="{% url 'hackathons:hackathon-list' %}">Хакатоны</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

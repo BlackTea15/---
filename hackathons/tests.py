@@ -1,3 +1,4 @@
+
 from datetime import datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
@@ -18,6 +19,12 @@ from .models import (
     Team,
     UserProfile,
 )
+=======
+from django.test import TestCase
+from django.urls import reverse
+
+from .models import Hackathon
+main
 
 
 class HackathonPagesTests(TestCase):
@@ -36,7 +43,10 @@ class HackathonPagesTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "организации хакатонов")
+codex/create-web-app-for-hackathon-automation-8v2i6vv
         self.assertContains(response, "Новости")
+=======
+main
 
     def test_list_page_shows_hackathon(self):
         response = self.client.get(reverse("hackathons:hackathon-list"))
@@ -51,6 +61,7 @@ class HackathonPagesTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.hackathon.description)
+
 
 
 class AuthAndRolesTests(TestCase):
@@ -715,3 +726,4 @@ class ScheduleAndResultsTests(TestCase):
         self.assertContains(response, "Открытие")
         self.assertContains(response, "Результаты")
         self.assertContains(response, "Best Project")
+main

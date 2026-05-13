@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group, User
 
@@ -45,8 +46,13 @@ class CustomGroupAdmin(StaffManagePermissionMixin, GroupAdmin):
     pass
 
 
+from .models import Hackathon
+
+
+
 @admin.register(Hackathon)
 class HackathonAdmin(admin.ModelAdmin):
+
     list_display = ("title", "start_date", "end_date", "application_deadline", "max_participants", "is_open")
     list_filter = ("is_open", "start_date", "application_deadline")
     search_fields = ("title", "description", "location")
@@ -100,3 +106,8 @@ class JuryScoreAdmin(admin.ModelAdmin):
     list_display = ("submission", "jury", "score", "created_at")
     list_filter = ("score", "submission__hackathon")
     search_fields = ("submission__title", "jury__username")
+
+    list_display = ("title", "start_date", "end_date", "is_open")
+    list_filter = ("is_open", "start_date")
+    search_fields = ("title", "description", "location")
+
