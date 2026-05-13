@@ -19,7 +19,6 @@ class UserProfile(models.Model):
         return f"{self.user.username} ({self.get_role_display()})"
 
 from django.db import models
-main
 
 
 class Hackathon(models.Model):
