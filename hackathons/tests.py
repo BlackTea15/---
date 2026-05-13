@@ -19,12 +19,6 @@ from .models import (
     Team,
     UserProfile,
 )
-=======
-from django.test import TestCase
-from django.urls import reverse
-
-from .models import Hackathon
-main
 
 
 class HackathonPagesTests(TestCase):
@@ -43,10 +37,7 @@ class HackathonPagesTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "организации хакатонов")
-codex/create-web-app-for-hackathon-automation-8v2i6vv
         self.assertContains(response, "Новости")
-=======
-main
 
     def test_list_page_shows_hackathon(self):
         response = self.client.get(reverse("hackathons:hackathon-list"))
@@ -519,6 +510,15 @@ class BackwardCompatibilityTests(TestCase):
             reverse("hackathons:hackathon-detail", kwargs={"pk": self.hackathon.pk}),
         )
 
+    @patch("hackathons.views.Hackathon.objects.order_by")
+    def test_home_page_does_not_crash_if_hackathon_table_missing(self, mock_order_by):
+        mock_order_by.side_effect = OperationalError("no such table: hackathons_hackathon")
+
+        response = self.client.get(reverse("hackathons:home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Новости")
+
 
 class TeamPreconditionsTests(TestCase):
     def test_cannot_open_team_create_without_open_hackathons(self):
@@ -726,4 +726,3 @@ class ScheduleAndResultsTests(TestCase):
         self.assertContains(response, "Открытие")
         self.assertContains(response, "Результаты")
         self.assertContains(response, "Best Project")
-main

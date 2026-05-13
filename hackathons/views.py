@@ -49,13 +49,6 @@ def user_can_score_projects(user):
 class OrganizerRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
         return user_can_manage_hackathons(self.request.user)
-
-from django.views.generic import DetailView, ListView, TemplateView
-
-from .models import Hackathon
-
-
-
 class HomeView(TemplateView):
     template_name = "hackathons/home.html"
 
@@ -63,8 +56,14 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["can_manage_hackathons"] = user_can_manage_hackathons(self.request.user)
-        context["latest_hackathons"] = Hackathon.objects.order_by("-created_at")[:5]
-        context["latest_teams"] = Team.objects.select_related("hackathon").order_by("-created_at")[:5]
+        context["latest_hackathons"] = []
+        context["latest_teams"] = []
+        try:
+            context["latest_hackathons"] = Hackathon.objects.order_by("-created_at")[:5]
+            context["latest_teams"] = Team.objects.select_related("hackathon").order_by("-created_at")[:5]
+        except (OperationalError, ProgrammingError):
+            context["latest_hackathons"] = []
+            context["latest_teams"] = []
         return context
 
 
@@ -75,15 +74,18 @@ class HackathonListView(ListView):
 
 
     def get_queryset(self):
-        queryset = Hackathon.objects.all()
-        q = self.request.GET.get("q", "").strip()
-        open_only = self.request.GET.get("open_only") == "1"
+        try:
+            queryset = Hackathon.objects.all()
+            q = self.request.GET.get("q", "").strip()
+            open_only = self.request.GET.get("open_only") == "1"
 
-        if q:
-            queryset = queryset.filter(title__icontains=q)
-        if open_only:
-            queryset = queryset.filter(is_open=True)
-        return queryset
+            if q:
+                queryset = queryset.filter(title__icontains=q)
+            if open_only:
+                queryset = queryset.filter(is_open=True)
+            return queryset
+        except (OperationalError, ProgrammingError):
+            return Hackathon.objects.none()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -386,9 +388,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         profile = getattr(self.request.user, "profile", None)
         context["profile"] = profile
-        context["hackathons_count"] = Hackathon.objects.count()
-        context["teams_count"] = Team.objects.filter(members=self.request.user).count()
-        context["applications_count"] = Application.objects.filter(user=self.request.user).count()
+        context["hackathons_count"] = 0
+        context["teams_count"] = 0
+        context["applications_count"] = 0
+        try:
+            context["hackathons_count"] = Hackathon.objects.count()
+            context["teams_count"] = Team.objects.filter(members=self.request.user).count()
+            context["applications_count"] = Application.objects.filter(user=self.request.user).count()
+        except (OperationalError, ProgrammingError):
+            context["hackathons_count"] = 0
+            context["teams_count"] = 0
+            context["applications_count"] = 0
         context["can_manage_hackathons"] = user_can_manage_hackathons(self.request.user)
         context["is_admin_user"] = bool(self.request.user.is_staff or self.request.user.is_superuser)
         return context
