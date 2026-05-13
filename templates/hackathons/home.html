@@ -67,35 +67,4 @@
         </ul>
     </aside>
 
-{% extends 'base.html' %}
 
-{% block title %}HackHub — организация хакатонов{% endblock %}
-
-{% block content %}
-<section class="card" style="margin-top: 1rem;">
-    <h1>Простое веб-приложение для организации хакатонов</h1>
-    <p class="meta">
-        Этот MVP поможет быстро публиковать события, просматривать расписание и управлять участниками.
-    </p>
-    <p>
-        <a class="btn" href="{% url 'hackathons:hackathon-list' %}">Перейти к списку хакатонов</a>
-    </p>
-</section>
-
-<section style="margin-top: 1rem;" class="grid">
-    <article class="card">
-        <h2>Что уже есть</h2>
-        <ul>
-            <li>Главная страница проекта</li>
-            <li>Каталог хакатонов</li>
-            <li>Страница с подробностями хакатона</li>
-            <li>Админка Django для управления контентом</li>
-        </ul>
-    </article>
-    <article class="card">
-        <h2>Следующий шаг</h2>
-        <p class="meta">Можно добавить регистрацию, команды, заявки и личный кабинет организатора.</p>
-    </article>
-
-</section>
-{% endblock %}
