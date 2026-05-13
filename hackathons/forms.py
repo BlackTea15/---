@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Application, Hackathon, Team, UserProfile
+from .models import Application, Hackathon, JuryScore, ProjectSubmission, Team, UserProfile
 
 
 class SignUpForm(UserCreationForm):
@@ -78,4 +78,33 @@ class ApplicationForm(forms.ModelForm):
         labels = {"motivation": "Комментарий к заявке"}
         widgets = {
             "motivation": forms.Textarea(attrs={"rows": 4, "placeholder": "Коротко опишите вашу идею"}),
+        }
+
+
+class ProjectSubmissionForm(forms.ModelForm):
+    class Meta:
+        model = ProjectSubmission
+        fields = ("title", "description", "repo_url", "demo_url")
+        labels = {
+            "title": "Название проекта",
+            "description": "Описание",
+            "repo_url": "Ссылка на репозиторий",
+            "demo_url": "Ссылка на демо",
+        }
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 4, "placeholder": "Коротко опишите решение"}),
+        }
+
+
+class JuryScoreForm(forms.ModelForm):
+    class Meta:
+        model = JuryScore
+        fields = ("score", "comment")
+        labels = {
+            "score": "Оценка (1-10)",
+            "comment": "Комментарий жюри",
+        }
+        widgets = {
+            "score": forms.NumberInput(attrs={"min": 1, "max": 10}),
+            "comment": forms.Textarea(attrs={"rows": 3}),
         }

@@ -2,7 +2,16 @@ from django.contrib import admin
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group, User
 
-from .models import Application, Hackathon, ResultEntry, ScheduleItem, Team, UserProfile
+from .models import (
+    Application,
+    Hackathon,
+    JuryScore,
+    ProjectSubmission,
+    ResultEntry,
+    ScheduleItem,
+    Team,
+    UserProfile,
+)
 
 
 class StaffManagePermissionMixin:
@@ -77,3 +86,17 @@ class ResultEntryAdmin(admin.ModelAdmin):
     list_display = ("hackathon", "place", "project_name", "team")
     list_filter = ("hackathon",)
     search_fields = ("project_name", "team__name")
+
+
+@admin.register(ProjectSubmission)
+class ProjectSubmissionAdmin(admin.ModelAdmin):
+    list_display = ("title", "hackathon", "user", "team", "created_at")
+    list_filter = ("hackathon",)
+    search_fields = ("title", "user__username", "team__name")
+
+
+@admin.register(JuryScore)
+class JuryScoreAdmin(admin.ModelAdmin):
+    list_display = ("submission", "jury", "score", "created_at")
+    list_filter = ("score", "submission__hackathon")
+    search_fields = ("submission__title", "jury__username")

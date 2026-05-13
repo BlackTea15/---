@@ -39,6 +39,45 @@
     {% endif %}
 
     <hr style="margin:1.2rem 0; border:none; border-top:1px solid rgba(162,178,238,.35);">
+    <h2>Подача проектов</h2>
+    {% if user.is_authenticated %}
+        {% if my_submission %}
+            <p class="meta">Вы уже подали проект: <strong>{{ my_submission.title }}</strong>.</p>
+        {% elif can_submit_project %}
+            <p><a class="btn" href="{% url 'hackathons:project-submit' hackathon.id %}">Подать проект</a></p>
+        {% else %}
+            <p class="meta">Подать проект могут только одобренные участники хакатона.</p>
+        {% endif %}
+    {% else %}
+        <p class="meta">Чтобы подать проект, войдите в аккаунт.</p>
+    {% endif %}
+
+    {% for submission in project_submissions %}
+        <article class="card" style="margin-top:.8rem;">
+            <h3>{{ submission.title }}</h3>
+            <p class="meta">Автор: {{ submission.user.username }}{% if submission.team %} · Команда: {{ submission.team.name }}{% endif %}</p>
+            {% if submission.description %}<p>{{ submission.description }}</p>{% endif %}
+            <p class="meta">
+                {% if submission.repo_url %}<a href="{{ submission.repo_url }}" target="_blank" rel="noreferrer">Репозиторий</a>{% endif %}
+                {% if submission.demo_url %} · <a href="{{ submission.demo_url }}" target="_blank" rel="noreferrer">Демо</a>{% endif %}
+            </p>
+            <p class="meta">
+                Средняя оценка жюри:
+                {% if submission.average_score %}
+                    <strong>{{ submission.average_score }}</strong>
+                {% else %}
+                    Пока нет оценок
+                {% endif %}
+            </p>
+            {% if can_score_projects %}
+                <p><a class="btn btn-light" href="{% url 'hackathons:submission-score' submission.id %}">Оценить проект</a></p>
+            {% endif %}
+        </article>
+    {% empty %}
+        <p class="meta">Пока нет поданных проектов.</p>
+    {% endfor %}
+
+    <hr style="margin:1.2rem 0; border:none; border-top:1px solid rgba(162,178,238,.35);">
     <h2>Расписание</h2>
     {% for item in schedule_items %}
         <p>

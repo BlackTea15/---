@@ -90,6 +90,45 @@ class Application(models.Model):
         return f"{self.user.username} -> {self.hackathon.title} ({self.get_status_display()})"
 
 
+class ProjectSubmission(models.Model):
+    hackathon = models.ForeignKey(Hackathon, on_delete=models.CASCADE, related_name="project_submissions")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="project_submissions")
+    team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name="project_submissions")
+    title = models.CharField(max_length=150)
+    description = models.TextField(blank=True)
+    repo_url = models.URLField(blank=True)
+    demo_url = models.URLField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("hackathon", "user")
+
+    def __str__(self):
+        return f"{self.title} ({self.hackathon.title})"
+
+    def average_score(self):
+        scores = self.jury_scores.values_list("score", flat=True)
+        if not scores:
+            return None
+        return round(sum(scores) / len(scores), 2)
+
+
+class JuryScore(models.Model):
+    submission = models.ForeignKey(ProjectSubmission, on_delete=models.CASCADE, related_name="jury_scores")
+    jury = models.ForeignKey(User, on_delete=models.CASCADE, related_name="jury_scores")
+    score = models.PositiveSmallIntegerField(default=1)
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("submission", "jury")
+
+    def __str__(self):
+        return f"{self.submission.title}: {self.score}"
+
+
 class ScheduleItem(models.Model):
     hackathon = models.ForeignKey(Hackathon, on_delete=models.CASCADE, related_name="schedule_items")
     title = models.CharField(max_length=150)

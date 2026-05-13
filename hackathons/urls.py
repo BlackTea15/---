@@ -13,6 +13,8 @@ from .views import (
     HackathonUpdateView,
     HomeView,
     JoinTeamView,
+    JuryScoreUpdateView,
+    ProjectSubmissionCreateView,
     SignUpView,
     TeamCreateView,
     TeamDeleteView,
@@ -29,6 +31,12 @@ urlpatterns = [
     path("hackathons/<int:pk>/edit/", HackathonUpdateView.as_view(), name="hackathon-edit"),
     path("hackathons/<int:pk>/delete/", HackathonDeleteView.as_view(), name="hackathon-delete"),
     path("hackathons/<int:pk>/apply/", ApplicationCreateView.as_view(), name="application-create"),
+    path(
+        "hackathons/<int:pk>/submit-project/",
+        ProjectSubmissionCreateView.as_view(),
+        name="project-submit",
+    ),
+    path("submissions/<int:pk>/score/", JuryScoreUpdateView.as_view(), name="submission-score"),
     path("applications/", ApplicationListView.as_view(), name="application-list"),
     path(
         "applications/<int:pk>/<str:status>/",

@@ -1,12 +1,30 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db import OperationalError, ProgrammingError
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, TemplateView, UpdateView
 
-from .forms import ApplicationForm, HackathonForm, JoinTeamForm, SignUpForm, TeamForm
-from .models import Application, Hackathon, ResultEntry, ScheduleItem, Team, UserProfile
+from .forms import (
+    ApplicationForm,
+    HackathonForm,
+    JoinTeamForm,
+    JuryScoreForm,
+    ProjectSubmissionForm,
+    SignUpForm,
+    TeamForm,
+)
+from .models import (
+    Application,
+    Hackathon,
+    JuryScore,
+    ProjectSubmission,
+    ResultEntry,
+    ScheduleItem,
+    Team,
+    UserProfile,
+)
 
 
 def user_can_manage_hackathons(user):
@@ -16,6 +34,15 @@ def user_can_manage_hackathons(user):
         return True
     profile = getattr(user, "profile", None)
     return bool(profile and profile.role == UserProfile.Roles.ORGANIZER)
+
+
+def user_can_score_projects(user):
+    if not user.is_authenticated:
+        return False
+    if user.is_staff or user.is_superuser:
+        return True
+    profile = getattr(user, "profile", None)
+    return bool(profile and profile.role in [UserProfile.Roles.ORGANIZER, UserProfile.Roles.MENTOR])
 
 
 class OrganizerRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -77,6 +104,28 @@ class HackathonDetailView(DetailView):
         context["approved_count"] = self.object.approved_applications_count()
         context["schedule_items"] = ScheduleItem.objects.filter(hackathon=self.object)
         context["result_entries"] = ResultEntry.objects.filter(hackathon=self.object)
+        context["project_submissions"] = []
+        context["my_submission"] = None
+        try:
+            context["project_submissions"] = ProjectSubmission.objects.filter(
+                hackathon=self.object
+            ).select_related("user", "team")
+            if user.is_authenticated:
+                context["my_submission"] = ProjectSubmission.objects.filter(
+                    hackathon=self.object, user=user
+                ).first()
+        except (OperationalError, ProgrammingError):
+            context["project_submissions"] = []
+            context["my_submission"] = None
+        can_submit = False
+        if user.is_authenticated:
+            can_submit = Application.objects.filter(
+                hackathon=self.object,
+                user=user,
+                status=Application.Status.APPROVED,
+            ).exists()
+        context["can_submit_project"] = can_submit
+        context["can_score_projects"] = user_can_score_projects(user)
         return context
 
 
@@ -220,6 +269,88 @@ class ApplicationStatusUpdateView(OrganizerRequiredMixin, TemplateView):
         application.save(update_fields=["status"])
         messages.success(request, "Статус заявки обновлён.")
         return redirect("hackathons:application-list")
+
+
+class ProjectSubmissionCreateView(LoginRequiredMixin, CreateView):
+    model = ProjectSubmission
+    form_class = ProjectSubmissionForm
+    template_name = "hackathons/project_submission_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.hackathon = get_object_or_404(Hackathon, pk=self.kwargs["pk"])
+        approved = Application.objects.filter(
+            hackathon=self.hackathon,
+            user=request.user,
+            status=Application.Status.APPROVED,
+        ).exists()
+        if not approved:
+            messages.error(request, "Подача проекта доступна только одобренным участникам.")
+            return redirect("hackathons:hackathon-detail", pk=self.hackathon.pk)
+        try:
+            already_submitted = ProjectSubmission.objects.filter(
+                hackathon=self.hackathon, user=request.user
+            ).exists()
+        except (OperationalError, ProgrammingError):
+            messages.error(
+                request,
+                "Project submissions are temporarily unavailable. Please apply database migrations.",
+            )
+            return redirect("hackathons:hackathon-detail", pk=self.hackathon.pk)
+        if already_submitted:
+            messages.info(request, "Вы уже подали проект на этот хакатон.")
+            return redirect("hackathons:hackathon-detail", pk=self.hackathon.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.hackathon = self.hackathon
+        form.instance.user = self.request.user
+        form.instance.team = (
+            Team.objects.filter(hackathon=self.hackathon, members=self.request.user).order_by("id").first()
+        )
+        messages.success(self.request, "Проект успешно отправлен.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("hackathons:hackathon-detail", kwargs={"pk": self.hackathon.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["hackathon"] = self.hackathon
+        return context
+
+
+class JuryScoreUpdateView(LoginRequiredMixin, UpdateView):
+    model = JuryScore
+    form_class = JuryScoreForm
+    template_name = "hackathons/jury_score_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.submission = get_object_or_404(ProjectSubmission, pk=self.kwargs["pk"])
+        if not user_can_score_projects(request.user):
+            messages.error(request, "Оценивать проекты могут только члены жюри.")
+            return redirect("hackathons:hackathon-detail", pk=self.submission.hackathon.pk)
+
+        self.instance, _ = JuryScore.objects.get_or_create(submission=self.submission, jury=request.user)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return self.instance
+
+    def form_valid(self, form):
+        score = form.cleaned_data["score"]
+        if score < 1 or score > 10:
+            form.add_error("score", "Оценка должна быть от 1 до 10.")
+            return self.form_invalid(form)
+        messages.success(self.request, "Оценка сохранена.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("hackathons:hackathon-detail", kwargs={"pk": self.submission.hackathon.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["submission"] = self.submission
+        return context
 
 
 class SignUpView(TemplateView):

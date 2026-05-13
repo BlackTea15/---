@@ -1,11 +1,23 @@
 from datetime import datetime, timedelta
 from pathlib import Path
+from unittest.mock import patch
+
 from django.contrib.auth.models import Group, User
+from django.db import OperationalError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Application, Hackathon, ResultEntry, ScheduleItem, Team, UserProfile
+from .models import (
+    Application,
+    Hackathon,
+    JuryScore,
+    ProjectSubmission,
+    ResultEntry,
+    ScheduleItem,
+    Team,
+    UserProfile,
+)
 
 
 class HackathonPagesTests(TestCase):
@@ -368,6 +380,133 @@ class ApplicationFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Application.objects.filter(hackathon=self.hackathon, user=self.participant).exists())
         self.assertContains(response, "Лимит участников уже достигнут")
+
+
+class ProjectSubmissionAndJuryTests(TestCase):
+    def setUp(self):
+        self.organizer = User.objects.create_user(username="org3", password="pass12345")
+        UserProfile.objects.create(user=self.organizer, role=UserProfile.Roles.ORGANIZER)
+
+        self.mentor = User.objects.create_user(username="mentor1", password="pass12345")
+        UserProfile.objects.create(user=self.mentor, role=UserProfile.Roles.MENTOR)
+
+        self.participant = User.objects.create_user(username="part3", password="pass12345")
+        UserProfile.objects.create(user=self.participant, role=UserProfile.Roles.PARTICIPANT)
+
+        self.hackathon = Hackathon.objects.create(
+            title="Submit Hack",
+            description="Desc",
+            start_date="2026-09-01",
+            end_date="2026-09-03",
+            location="Online",
+            is_open=True,
+        )
+
+    def test_approved_participant_can_submit_project(self):
+        Application.objects.create(
+            hackathon=self.hackathon,
+            user=self.participant,
+            status=Application.Status.APPROVED,
+        )
+        self.client.login(username="part3", password="pass12345")
+
+        response = self.client.post(
+            reverse("hackathons:project-submit", kwargs={"pk": self.hackathon.pk}),
+            {
+                "title": "Smart Solution",
+                "description": "ML project",
+                "repo_url": "https://github.com/example/repo",
+                "demo_url": "https://example.com/demo",
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            ProjectSubmission.objects.filter(hackathon=self.hackathon, user=self.participant).exists()
+        )
+        self.assertContains(response, "Проект успешно отправлен")
+
+    def test_unapproved_participant_cannot_submit_project(self):
+        self.client.login(username="part3", password="pass12345")
+
+        response = self.client.post(
+            reverse("hackathons:project-submit", kwargs={"pk": self.hackathon.pk}),
+            {
+                "title": "Blocked",
+                "description": "No app",
+                "repo_url": "",
+                "demo_url": "",
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(ProjectSubmission.objects.filter(hackathon=self.hackathon, user=self.participant).exists())
+        self.assertContains(response, "Подача проекта доступна только одобренным участникам")
+
+    def test_jury_member_can_score_project(self):
+        submission = ProjectSubmission.objects.create(
+            hackathon=self.hackathon,
+            user=self.participant,
+            title="Score Me",
+        )
+        self.client.login(username="mentor1", password="pass12345")
+
+        response = self.client.post(
+            reverse("hackathons:submission-score", kwargs={"pk": submission.pk}),
+            {"score": 9, "comment": "Отличная работа"},
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        score = JuryScore.objects.get(submission=submission, jury=self.mentor)
+        self.assertEqual(score.score, 9)
+        self.assertContains(response, "Оценка сохранена")
+
+
+class BackwardCompatibilityTests(TestCase):
+    def setUp(self):
+        self.participant = User.objects.create_user(username="compat_part", password="pass12345")
+        UserProfile.objects.create(user=self.participant, role=UserProfile.Roles.PARTICIPANT)
+        self.hackathon = Hackathon.objects.create(
+            title="Compat Hack",
+            description="Desc",
+            start_date="2026-10-01",
+            end_date="2026-10-02",
+            location="Online",
+            is_open=True,
+        )
+
+    @patch("hackathons.views.ProjectSubmission.objects.filter")
+    def test_detail_page_does_not_crash_if_submission_table_missing(self, mock_filter):
+        mock_filter.side_effect = OperationalError("no such table: hackathons_projectsubmission")
+
+        response = self.client.get(reverse("hackathons:hackathon-detail", kwargs={"pk": self.hackathon.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Подача проектов")
+
+
+    @patch("hackathons.views.ProjectSubmission.objects.filter")
+    def test_submit_page_does_not_crash_if_submission_table_missing(self, mock_filter):
+        Application.objects.create(
+            hackathon=self.hackathon,
+            user=self.participant,
+            status=Application.Status.APPROVED,
+        )
+        self.client.login(username="compat_part", password="pass12345")
+        mock_filter.side_effect = OperationalError("no such table: hackathons_projectsubmission")
+
+        response = self.client.get(
+            reverse("hackathons:project-submit", kwargs={"pk": self.hackathon.pk}),
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            reverse("hackathons:hackathon-detail", kwargs={"pk": self.hackathon.pk}),
+        )
 
 
 class TeamPreconditionsTests(TestCase):
